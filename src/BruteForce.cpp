@@ -46,6 +46,10 @@ public:
         std::cout << "Table initialized" << std::endl;
     }
 
+    void AddColors(std::pair<int, char> c) {
+        colors.insert(c);
+    }
+
     int Sort() {
         return Sort(1, 0);
     }
@@ -54,17 +58,28 @@ public:
         return data;
     }
 
-    std::deque<std::pair<int, int>> GetValues() const {
-        return values;
+    std::string ToString() {
+        std::string s = "Table\n";
+        for (int i = 0; i < data.size(); i++ ) {
+            for (int j = 0; j < data[i].size(); j++ ) {
+                auto p = data[i][j];
+                s += std::to_string(p.first) + colors[p.second] + " ";
+            }
+            s += "\n";
+        }
+        s += "List (should be empty)\n";
+        for (int i = 0; i < values.size(); i++) {
+            auto v = values[i];
+            s += std::to_string(v.first) + colors[v.second] + " ";
+        }
+        s += " Length: " + values.size();
+        return s;
     }
 
-    friend std::ostream& operator<< (std::ostream &out, const Table &table);
-
-    static std::string pairToString(std::pair<int, int> p) {
-        return std::to_string(p.first) + "," + std::to_string(p.second);
-    }
 
 private:
+    std::map<int, char> colors;
+
     std::deque<std::pair<int, int>> values;
     std::vector<std::vector<std::pair<int, int>>> data;
 
@@ -74,6 +89,10 @@ private:
     std::vector<Exception> exceptions;
 
     int iterations = 0;
+
+    std::string integerPairToString(std::pair<int, int> p) {
+        return std::to_string(p.first) + "," + std::to_string(p.second);
+    }
 
     bool CellIsInTopLeftBottomRightDiagonal(int x, int y) {
         return x == y;
@@ -91,7 +110,7 @@ private:
         // Check if value is the same as what was tried in prevous attempts
         for (auto e : exceptions) {
             if (val == e.p && x == e.x && y == e.y) {
-                std::cout << "Caught exception for " << pairToString(val) << "at (" << x << ", " << y << ")" << std::endl;
+                std::cout << "Caught exception for " << integerPairToString(val) << "at (" << x << ", " << y << ")" << std::endl;
                 return false;
             }
         }
@@ -130,7 +149,7 @@ private:
 
     // New X and Y should always be further back in the table than Old X and Y
     // Because we are only BACK-tracking to a new location
-    std::pair<int,int> Recycle(int oldX, int oldY, int newX, int newY) {
+    void Recycle(int oldX, int oldY, int newX, int newY) {
         // This means the solver completely restarted
         // so exceptions must be cleared
         if (newX == 1 && newY == 0) {
@@ -138,12 +157,12 @@ private:
             std::cout << "Cleared exceptions" << std::endl;
         }
 
-        auto faultPair = data[newX][newY];
+        exceptions.push_back({newX, newY, data[newX][newY]});
 
         // If new and old cell are on the same row
         if (newX == oldX) {
             for (int j = newY; j < oldY; j++) {
-                std::cout << "Pushing back: " << pairToString(data[newX][j]) << std::endl;            
+                std::cout << "Pushing back: " << integerPairToString(data[newX][j]) << std::endl;            
                 // Checks if p has an element
                 values.push_back(data[newX][j]);
                 data[newX][j] == std::make_pair(0, 0);
@@ -151,29 +170,28 @@ private:
         } else {
             // Clear new cell and the values in front of it in its row
             for (int j = newY; j <= data[newX].size() - 1; j++) {
-                std::cout << "Pushing back: " << pairToString(data[newX][j]) << std::endl;                        
-                    values.push_back(data[newX][j]);
-                    data[newX][j] == std::make_pair(0, 0);
+                std::cout << "Pushing back: " << integerPairToString(data[newX][j]) << std::endl;                        
+                values.push_back(data[newX][j]);
+                data[newX][j] == std::make_pair(0, 0);
 
             }
             // Clear old cell and the values behind it in the its row
             for (int j = oldY - 1; j >= 0; j--) {
-                std::cout << "Pushing back: " << pairToString(data[oldX][j]) << std::endl;                        
-                    values.push_back(data[oldX][j]);
-                    data[oldX][j] == std::make_pair(0, 0);
+                std::cout << "Pushing back: " << integerPairToString(data[oldX][j]) << std::endl;                        
+                values.push_back(data[oldX][j]);
+                data[oldX][j] == std::make_pair(0, 0);
     
             }
             // Clear all cells in rows inbetween the new and old cells
             for (int i = newX + 1; i <= oldX - 1; i++) {
                 for (int j = 0; j <= values.size() - 1; j++) {
-                    std::cout << "Pushing back: " << pairToString(data[i][j]) << std::endl;                        
-                        values.push_back(data[i][j]);
-                        data[i][j] == std::make_pair(0, 0);
+                    std::cout << "Pushing back: " << integerPairToString(data[i][j]) << std::endl;                        
+                    values.push_back(data[i][j]);
+                    data[i][j] == std::make_pair(0, 0);
                 }
             }
         }
         std::random_shuffle(values.begin(), values.end());
-        return faultPair;
     }
 
     int Sort(int x, int y) {
@@ -204,21 +222,20 @@ private:
 
                 std::cout << "List: ";
                 for (int i = 0; i < values.size(); i++) {
-                    std::cout << pairToString(values[i]) << " ";
+                    std::cout << integerPairToString(values[i]) << " ";
                 }
                 std::cout << std::endl;
 
-                std::cout << "Made " << pairToString(data[newX][newY]) << " an exception at (" << newX << ", " << newY << ")" << std::endl;
-                exceptions.push_back({newX, newY, Recycle(x, y, newX, newY)});
+                std::cout << "Made " << integerPairToString(data[newX][newY]) << " an exception at (" << newX << ", " << newY << ")" << std::endl;
                 return Sort(newX, newY);
             } else {
-                std::cout << "Successful value " << pairToString(values.front()) << " found for (" << x << ", " << y << ")" << std::endl;
+                std::cout << "Successful value " << integerPairToString(values.front()) << " found for (" << x << ", " << y << ")" << std::endl;
                 data[x][y] = values.front();
                 values.pop_front();
 
                 std::cout << "List: ";
                 for (int i = 0; i < values.size(); i++) {
-                    std::cout << pairToString(values[i]) << " ";
+                    std::cout << integerPairToString(values[i]) << " ";
                 }
                 std::cout << std::endl;
                 std::cout << "List items left: " << values.size() << std::endl;
@@ -238,42 +255,23 @@ private:
     }
 };
 
-std::ostream& operator<<(std::ostream& os, const Table& table) {
-    os.clear();
-    os << "Table\n";
-    for (int i = 0; i < table.GetData().size(); i++ ) {
-        for (int j = 0; j < table.GetData()[i].size(); j++ ) {
-            os << Table::pairToString(table.GetData()[i][j]) << " ";
-        }
-        os << "\n";
-    }
-    os << "List (should be empty)\n";
-    for (int i = 0; i < table.GetValues().size(); i++) {
-        os << Table::pairToString(table.GetValues()[i]) << " ";
-    }
-    os << " Length: " << table.GetValues().size();
-    return os;
-}
-
 int main() {
-    // int s = 0;
-    // std::cout << "Side length of square table?" << std::endl;
-    // std::cin >> s;
-    // std::cout << s << "x" << s << " table" << std::endl;
-    int s = 5; // TODO: change to be any number
+    int s = 0;
+    std::cout << "Side length of square table?" << std::endl;
+    std::cin >> s;
+    std::cout << s << "x" << s << " table" << std::endl;
     Table table{s};
-    std::cout << table;
+    std::cout << table.ToString() << std::endl;
 
-    /*std::map<int, std::string> colors;
     for (int i = 1; i <= s; i++) {
-        std::cout << "Name color " << i << ":" << std::endl;
-        std::string c;
+        std::cout << "Abbreviation for color " << i << ":" << std::endl;
+        char c;
         std::cin >> c;
-        colors.insert(std::make_pair(i, c));
-    }*/ // TODO: Uncomment when everything is finished
+        table.AddColors(std::make_pair(i , toupper(c)));
+    }
     
     std::clock_t start = std::clock();
     int tries = table.Sort();
-    std::cout << table << std::endl;
+    std::cout << table.ToString() << std::endl;
     std::cout << "Time taken to solve: " << (std::clock() - start) / (double) CLOCKS_PER_SEC << " seconds" << std::endl;
 }
