@@ -9,6 +9,4 @@ I regretfully chose to do this in C++ for comfort and speed reasons, but I now r
 This repo is tested on C++14 using g++ 9.2.1
 
 ## Usage
-TBD
-
-For now, build with `g++ -o BruteForce src/BruteForce.cpp` from the root directory and run the generated executable.
+Build using `make` in the root directory and run the generated executable.
