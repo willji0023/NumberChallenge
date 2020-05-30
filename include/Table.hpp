@@ -11,48 +11,41 @@
 class Table {
 public:
     struct Exception {
-        int x;
-        int y;
-        std::pair<int, int> p;
+        unsigned char x;
+        unsigned char y;
+        std::pair<unsigned char, unsigned char> p;
     };
 
-    Table(int size);
+    Table(const unsigned char& size);
 
-    void AddColors(std::pair<int, char> c);
+    void AddColors(const std::pair<unsigned char, char>& c);
 
     void Sort();
 
     std::string ToString();
 
 private:
-    std::map<int, char> colors;
+    std::map<unsigned char, char> colors;
 
-    std::vector<std::pair<int, int>> values;
-    std::vector<std::vector<std::pair<int, int>>> data;
+    std::vector<std::pair<unsigned char, unsigned char>> values;
+    std::vector<std::vector<std::pair<unsigned char, unsigned char>>> data;
 
-    std::vector<std::pair<int, int>> topLeftBottomRightDiagonalCellCoords;
-    std::vector<std::pair<int, int>> topRightBottomLeftDiagonalCellCoords;
+    std::vector<std::pair<unsigned char, unsigned char>> topLeftBottomRightDiagonalCellCoords;
+    std::vector<std::pair<unsigned char, unsigned char>> topRightBottomLeftDiagonalCellCoords;
 
     std::vector<Exception> exceptions;
 
-    int iterations = 0;
-
     unsigned seed;
 
-    /**
-     * Print pair values for debugging purposes
-     */
-    std::string IntegerPairToString(std::pair<int, int> p);
+    bool CellIsInTopLeftBottomRightDiagonal(const unsigned char& x, const unsigned char& y);
 
-    bool CellIsInTopLeftBottomRightDiagonal(int x, int y);
+    bool CellIsInTopRightBottomLeftDiagonal(const unsigned char& x, const unsigned char& y);
 
-    bool CellIsInTopRightBottomLeftDiagonal(int x, int y);
+    bool PairsAreSafe(const std::pair<unsigned char,unsigned char>& p1, const std::pair<unsigned char,unsigned char>& p2);
 
-    bool PairsAreSafe(std::pair<int,int> p1, std::pair<int,int> p2);
+    char FindSafeValue(const unsigned char& pos, const unsigned char& x, const unsigned char& y);
 
-    int FindSafeValue(int pos, int x, int y);
+    void Recycle(const unsigned char& newX, const unsigned char& newY);
 
-    void Recycle(int newX, int newY);
-
-    void Sort(int x, int y);
+    void Sort(const unsigned char& x, const unsigned char& y);
 };
